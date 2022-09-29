@@ -1,0 +1,38 @@
+<resources>
+    <string name="app_name">JoKenPo</string>
+
+    <string name="player_label_text_scoreboard">JOGADOR</string>
+    <string name="computer_label_text_scoreboard">COMPUTADOR</string>
+    <string name="player_scoreboard_initial_value">0</string>
+    <string name="scoreboard_scores_separator">X</string>
+    <string name="computer_scoreboard_initial_value">0</string>
+    <string name="reset_scoreboard_button_text">ZERAR</string>
+
+    <string name="computer_choice_label_text">Escolha do computador</string>
+
+    <string name="player_choice_label_text">Selecione sua jogada:</string>
+    <string name="play_again_button_text">Jogar novamente</string>
+    <string name="rock">Pedra</string>
+    <string name="paper">Papel</string>
+    <string name="scissors">Tesoura</string>
+
+    <string name="lose_message">Você perdeu!</string>
+    <string name="win_message">Você ganhou!</string>
+    <string name="draw_message">Empate!</string>
+    <string name="title_activity_main2">MainActivity2</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="nav_header_title">JoKenPo</string>
+    <string name="nav_header_subtitle">Ailton Gabriel de Oliveira</string>
+    <string name="nav_header_desc">Navigation header</string>
+    <string name="action_settings">Settings</string>
+
+    <string name="menu_jo_ken_po">JoKenPo</string>
+    <string name="menu_ranking">Ranking</string>
+    <string name="menu_home">Home</string>
+    <string name="menu_gallery">Gallery</string>
+    <string name="menu_slideshow">Slideshow</string>
+<!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
+</resources>
