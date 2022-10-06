@@ -16,4 +16,10 @@
         android:name="tsi.ailton.android.jokenpo.ui.ranking.RankingFragment"
         android:label="@string/menu_ranking"
         tools:layout="@layout/fragment_ranking" />
+
+    <fragment
+        android:id="@+id/nav_game_mode"
+        android:name="tsi.ailton.android.jokenpo.ui.gamemode.GameModeFragment"
+        android:label="@string/menu_game_mode"
+        tools:layout="@layout/fragment_game_mode" />
 </navigation>

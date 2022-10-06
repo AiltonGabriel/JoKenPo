@@ -29,10 +29,19 @@
 
     <string name="menu_jo_ken_po">JoKenPo</string>
     <string name="menu_ranking">Ranking</string>
-    <string name="menu_home">Home</string>
-    <string name="menu_gallery">Gallery</string>
-    <string name="menu_slideshow">Slideshow</string>
-<!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="menu_game_mode">Modo de jogo</string>
+
+    <!-- Add player to ranking dialog -->
+    <string name="add_player_scoreboard_msg">Digite seu nome para adicionar sua pontuação ao ranking:</string>
+    <string name="add_player_scoreboard_empty_input_msg">Vocë deve informar seu nome para adicionar sua pontuação ao ranking!</string>
+    <string name="add_player_scoreboard_ok_button_text">Adicionar</string>
+    <string name="add_player_scoreboard_cancel_button_text">Cancelar</string>
+
+    <string name="empty_ranking_msg">O ranking está vazio!</string>
+    <string name="better_score_already_registered_msg">O nome informado já possuí uma pontuação mais alta cadastrada no ranking!</string>
+
+    <string name="game_mode_title">Modo de escolha do computador:</string>
+    <string name="game_mode_random">O computador escolhe jogadas aleatórias</string>
+    <string name="game_mode_only_rock">O computador escolhe somente pedra</string>
 
 </resources>

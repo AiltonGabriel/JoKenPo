@@ -5,16 +5,13 @@ import android.content.DialogInterface;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.text.InputType;
-import android.util.Log;
 import android.view.View;
-import android.view.Menu;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.material.navigation.NavigationView;
 
@@ -36,14 +33,14 @@ import tsi.ailton.android.jokenpo.models.Scoreboard;
 
 public class MainActivity extends AppCompatActivity {
 
-    private enum PLAY_OPTIONS {
+    private enum PLAY_OPTION {
         ROCK(R.drawable.ic_rock_72, R.drawable.ic_rock_192),
         PAPER(R.drawable.ic_paper_72, R.drawable.ic_paper_192),
         SCISSORS(R.drawable.ic_scissors_72, R.drawable.ic_scissors_192);
 
         private final int imageResource72;
         private final int imageResource192;
-        PLAY_OPTIONS(int imageResource96, int imageResource192){
+        PLAY_OPTION(int imageResource96, int imageResource192){
             this.imageResource72 = imageResource96;
             this.imageResource192 = imageResource192;
         }
@@ -57,9 +54,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    Scoreboard scoreboard = new Scoreboard();
+    public enum GAME_MODE { RANDOM, ONLY_ROCK };
+
+    private GAME_MODE game_mode = GAME_MODE.RANDOM;
+    private Scoreboard scoreboard = new Scoreboard();
+
     private boolean isGameFinished = false;
-    private Player player;
     private List<Player> ranking;
 
     private AppBarConfiguration mAppBarConfiguration;
@@ -78,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_jo_ken_po, R.id.nav_ranking)
+                R.id.nav_jo_ken_po, R.id.nav_ranking, R.id.nav_game_mode)
                 .setOpenableLayout(drawer)
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
@@ -99,59 +99,70 @@ public class MainActivity extends AppCompatActivity {
                 || super.onSupportNavigateUp();
     }
 
-    public void updateJoKenPoGuiInfo() {
 
-        TextView playerScore = (TextView) findViewById(R.id.player_score_textView);
-        TextView computerScore = (TextView) findViewById(R.id.computer_score_textView);
+    public boolean isGameFinished() {
+        return isGameFinished;
+    }
 
-        playerScore.setText(String.valueOf(scoreboard.getPlayerScore()));
-        computerScore.setText(String.valueOf(scoreboard.getComputerScore()));
+    public List<Player> getRanking() {
+        return ranking;
+    }
 
-        this.player = null;
+    public GAME_MODE getGame_mode() {
+        return game_mode;
+    }
+
+    public void setGame_mode(GAME_MODE game_mode) {
+        this.game_mode = game_mode;
     }
 
     public void resetScoreboard(View view) {
         scoreboard.reset();
         isGameFinished = false;
-        updateJoKenPoGuiInfo();
+        updateScoreboardGui(view);
         playAgain(view);
     }
 
+    public void updateScoreboardGui(View view) {
+        TextView playerScore = (TextView) findViewById(R.id.player_score_textView);
+        TextView computerScore = (TextView) findViewById(R.id.computer_score_textView);
+
+        playerScore.setText(String.valueOf(scoreboard.getPlayerScore()));
+        computerScore.setText(String.valueOf(scoreboard.getComputerScore()));
+    }
+
     public void playAgain(View view) {
-        if(isGameFinished){
-            resetScoreboard(view);
-        } else {
-            Button playAgainButton = (Button) findViewById(R.id.play_again_button);
-            playAgainButton.setVisibility(Button.GONE);
 
-            ImageView computerChoiceImageView = (ImageView) findViewById(R.id.computer_choice_imageView);
-            computerChoiceImageView.setImageResource(R.color.computer_choose_empty_background_color);
+        Button playAgainButton = (Button) findViewById(R.id.play_again_button);
+        playAgainButton.setVisibility(Button.GONE);
 
-            ImageButton imageButtons[] = getImageButtons();
+        ImageView computerChoiceImageView = (ImageView) findViewById(R.id.computer_choice_imageView);
+        computerChoiceImageView.setImageResource(R.color.computer_choose_empty_background_color);
 
-            setImageButtonsEnable(true, imageButtons);
-            for(ImageButton imageButton : imageButtons) {
-                imageButton.getBackground().clearColorFilter();
-            }
+        ImageButton imageButtons[] = getImageButtons();
 
-            ((TextView) findViewById(R.id.player_choice_textView)).setText(R.string.player_choice_label_text);
+        setImageButtonsEnable(true, imageButtons);
+        for(ImageButton imageButton : imageButtons) {
+            imageButton.getBackground().clearColorFilter();
         }
+
+        ((TextView) findViewById(R.id.player_choice_textView)).setText(R.string.player_choice_label_text);
     }
 
     public void playRock(View view) {
-        makePlay((ImageButton) view, PLAY_OPTIONS.ROCK);
+        makePlay(view, (ImageButton) view, PLAY_OPTION.ROCK);
     }
 
     public void playPaper(View view){
-        makePlay((ImageButton) view, PLAY_OPTIONS.PAPER);
+        makePlay(view, (ImageButton) view, PLAY_OPTION.PAPER);
     }
 
     public void playScissors(View view) {
-        makePlay((ImageButton) view, PLAY_OPTIONS.SCISSORS);
+        makePlay(view, (ImageButton) view, PLAY_OPTION.SCISSORS);
     }
 
-    private void makePlay(ImageButton imageButton, PLAY_OPTIONS choice) {
-        PLAY_OPTIONS computerChoice = generateComputerPlay();
+    private void makePlay(View view, ImageButton imageButton, PLAY_OPTION choice) {
+        PLAY_OPTION computerChoice = generateComputerPlay();
 
         ImageButton imageButtons[] = getImageButtons();
 
@@ -171,15 +182,15 @@ public class MainActivity extends AppCompatActivity {
 
             switch (choice) {
                 case ROCK:
-                    if (computerChoice == PLAY_OPTIONS.SCISSORS)
+                    if (computerChoice == PLAY_OPTION.SCISSORS)
                         won = true;
                     break;
                 case PAPER:
-                    if (computerChoice == PLAY_OPTIONS.ROCK)
+                    if (computerChoice == PLAY_OPTION.ROCK)
                         won = true;
                     break;
                 case SCISSORS:
-                    if (computerChoice == PLAY_OPTIONS.PAPER)
+                    if (computerChoice == PLAY_OPTION.PAPER)
                         won = true;
                     break;
             }
@@ -193,15 +204,12 @@ public class MainActivity extends AppCompatActivity {
         Button playAgainButton = (Button) findViewById(R.id.play_again_button);
         playAgainButton.setVisibility(Button.VISIBLE);
 
-        updateJoKenPoGuiInfo();
-
         if (isGameFinished && scoreboard.isWinner()) {
-//            Log.d("Aqui", "aqui");
-//            NavigationView navigationView = (NavigationView) this.findViewById(R.id.nav_view);
-//            navigationView.getMenu().getItem(1).setChecked(true);
-            player = new Player("", scoreboard.getComputerScore(), scoreboard.getPlayerScore(), scoreboard.getGameElapsedTime());
-            addPlayerScoreboardDialog();
+            addPlayerToRankingDialog();
+            resetScoreboard(view);
         }
+
+        updateScoreboardGui(view);
     }
 
     private ImageButton[] getImageButtons(){
@@ -220,62 +228,91 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private PLAY_OPTIONS generateComputerPlay(){
-        return PLAY_OPTIONS.values()[
+    private PLAY_OPTION generateComputerPlay(){
+        if(this.game_mode == GAME_MODE.RANDOM){
+            return PLAY_OPTION.values()[
                 new SecureRandom().nextInt(
-                        PLAY_OPTIONS.values().length
+                        PLAY_OPTION.values().length
                 )
-        ];
+            ];
+        } //else if(this.game_mode == GAME_MODE.ONLY_ROCK){
+            return PLAY_OPTION.ROCK;
+        //}
     }
 
-    public void updateRanking(){
-        List<String> itens = new ArrayList<>();
-        for(Player player : ranking){
-            itens.add(player.toString());
+    /*
+    *  Ranking
+    * */
+    private void addPlayerToRankingDialog() {
+        Player player = new Player("", scoreboard.getComputerScore(), scoreboard.getPlayerScore(), scoreboard.getGameElapsedTime());
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle(R.string.add_player_scoreboard_msg);
+
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setView(input);
+
+        builder.setPositiveButton(R.string.add_player_scoreboard_ok_button_text, null);
+        builder.setNegativeButton(R.string.add_player_scoreboard_cancel_button_text, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        AlertDialog dialog = builder.create();
+
+        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
+            @Override
+            public void onShow(DialogInterface dialogInterface) {
+                Button button = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
+
+                button.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        String txt = input.getText().toString();
+
+                        if(!txt.isEmpty()){
+                            player.setNome(input.getText().toString());
+                            addPlayerToRanking(player);
+                            dialog.dismiss();
+                            Navigation.findNavController(MainActivity.this, R.id.nav_host_fragment_content_main).navigate(R.id.nav_ranking);
+                        } else{
+                            Toast.makeText(getApplicationContext(), R.string.add_player_scoreboard_empty_input_msg, Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
+            }
+        });
+
+        dialog.show();
+    }
+
+    private int findPlayer(Player player, List<Player> players){
+        for(int i = 0; i < players.size(); i++){
+            if(players.get(i).getNome().equals(player.getNome()))
+                return i;
         }
 
-        ListView rankingListView = (ListView) findViewById(R.id.ranking_list_view);
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(
-                this, android.R.layout.simple_list_item_1, itens
-        );
-
-        rankingListView.setAdapter(adapter);
-    }
-
-    public Player getPlayer(){
-        return this.player;
-    }
-
-    private void addPlayerScoreboardDialog() {
-        if(player != null){
-            AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("Digite seu nome para adicionar seu resultado ao ranking:");
-
-            final EditText input = new EditText(this);
-            input.setInputType(InputType.TYPE_CLASS_TEXT);
-            builder.setView(input);
-
-            builder.setPositiveButton("Adicionar", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    player.setNome(input.getText().toString());
-                    addPlayerToRanking(player);
-                }
-            });
-            builder.setNegativeButton("Cancelar", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.cancel();
-                }
-            });
-
-            builder.show();
-        }
+        return -1;
     }
 
     public void addPlayerToRanking (Player player){
-        ranking.add(player);
-        Collections.sort(ranking);
+        int playerIndex = findPlayer(player, ranking);
+
+        if(playerIndex < 0){
+            ranking.add(player);
+            Collections.sort(ranking);
+        } else {
+            if(ranking.get(playerIndex).compareTo(player) > 0){
+                ranking.remove(playerIndex);
+                ranking.add(player);
+                Collections.sort(ranking);
+            } else {
+                Toast.makeText(this, R.string.better_score_already_registered_msg, Toast.LENGTH_LONG).show();
+            }
+        }
     }
+
 }
