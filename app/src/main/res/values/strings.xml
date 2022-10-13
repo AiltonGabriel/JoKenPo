@@ -31,7 +31,9 @@
     <string name="menu_ranking">Ranking</string>
     <string name="menu_game_mode">Modo de jogo</string>
 
-    <!-- Add player to ranking dialog -->
+    <!-- Add rankingItem to ranking dialog -->
+    <string name="title_ranking">Ranking: </string>
+    <string name="clear_ranking">Limpar ranking</string>
     <string name="add_player_scoreboard_msg">Digite seu nome para adicionar sua pontuação ao ranking:</string>
     <string name="add_player_scoreboard_empty_input_msg">Vocë deve informar seu nome para adicionar sua pontuação ao ranking!</string>
     <string name="add_player_scoreboard_ok_button_text">Adicionar</string>

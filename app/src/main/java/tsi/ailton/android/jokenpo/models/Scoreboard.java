@@ -1,9 +1,21 @@
 package tsi.ailton.android.jokenpo.models;
 
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+import androidx.room.TypeConverter;
+import androidx.room.TypeConverters;
+
 import java.time.Duration;
 import java.util.Calendar;
 
+import tsi.ailton.android.jokenpo.models.dao.converters.CalendarConverter;
+
+@Entity
+@TypeConverters({CalendarConverter.class})
 public class Scoreboard {
+    @PrimaryKey(autoGenerate = true)
+    public Long id;
+
     private static final int POINTS_TO_WIN = 5;
 
     private int computerScore;
@@ -12,12 +24,44 @@ public class Scoreboard {
     private Calendar start;
     private Calendar end;
 
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
     public int getComputerScore() {
         return computerScore;
     }
 
+    public void setComputerScore(int computerScore) {
+        this.computerScore = computerScore;
+    }
+
     public int getPlayerScore() {
         return playerScore;
+    }
+
+    public void setPlayerScore(int playerScore) {
+        this.playerScore = playerScore;
+    }
+
+    public Calendar getStart() {
+        return start;
+    }
+
+    public void setStart(Calendar start) {
+        this.start = start;
+    }
+
+    public Calendar getEnd() {
+        return end;
+    }
+
+    public void setEnd(Calendar end) {
+        this.end = end;
     }
 
     public boolean addPointComputer() {

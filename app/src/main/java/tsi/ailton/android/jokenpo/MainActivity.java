@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.text.InputType;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -21,15 +22,21 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.room.Room;
 
 import java.security.SecureRandom;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 
 import tsi.ailton.android.jokenpo.databinding.ActivityMainBinding;
-import tsi.ailton.android.jokenpo.models.Player;
+import tsi.ailton.android.jokenpo.models.AppState;
+import tsi.ailton.android.jokenpo.models.RankingItem;
 import tsi.ailton.android.jokenpo.models.Scoreboard;
+import tsi.ailton.android.jokenpo.models.dao.AppDatabase;
+import tsi.ailton.android.jokenpo.models.dao.AppStateDao;
+import tsi.ailton.android.jokenpo.models.dao.RankingItemDao;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -56,11 +63,12 @@ public class MainActivity extends AppCompatActivity {
 
     public enum GAME_MODE { RANDOM, ONLY_ROCK };
 
-    private GAME_MODE game_mode = GAME_MODE.RANDOM;
-    private Scoreboard scoreboard = new Scoreboard();
+    private AppDatabase db;
+    private RankingItemDao rankingItemDao;
+    private AppStateDao appStateDao;
 
-    private boolean isGameFinished = false;
-    private List<Player> ranking;
+    private GAME_MODE game_mode;
+    private Scoreboard scoreboard;
 
     private AppBarConfiguration mAppBarConfiguration;
     private ActivityMainBinding binding;
@@ -85,11 +93,29 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
 
-        ranking = new ArrayList<>();
-//        ranking.add(new Player("Ailton", 2, 5, 200000L));
 //        ranking.add(new Player("Ailton2", 3, 5, 10000L));
 //        ranking.add(new Player("Ailton3", 2, 5, 250000L));
 //        ranking.add(new Player("Ailton4", 3, 5, 8000L));
+
+        db = AppDatabase.getInstance(getApplicationContext());
+        rankingItemDao = db.rankingItemDao();
+        appStateDao = db.appStateDao();
+
+        AppState appState = appStateDao.get();
+
+        if(appState != null){
+            game_mode = appState.getGame_mode();
+            scoreboard = appState.getScoreboard();
+        } else {
+            game_mode = GAME_MODE.RANDOM;
+            scoreboard = new Scoreboard();
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        saveAppState();
     }
 
     @Override
@@ -99,13 +125,25 @@ public class MainActivity extends AppCompatActivity {
                 || super.onSupportNavigateUp();
     }
 
-
-    public boolean isGameFinished() {
-        return isGameFinished;
+    private void saveAppState(){
+        AppState appState = appStateDao.get();
+        if(appState != null){
+            appState.setGame_mode(this.game_mode);
+            appState.setScoreboard(this.scoreboard);
+            appStateDao.update(appState);
+        } else {
+            appStateDao.insert(new AppState(this.game_mode, this.scoreboard));
+        }
     }
 
-    public List<Player> getRanking() {
-        return ranking;
+    public boolean isGameFinished() {
+        return scoreboard.isGameFinished();
+    }
+
+    public List<RankingItem> getRanking() {
+        List<RankingItem> rankingItems = rankingItemDao.getAll();
+        Collections.sort(rankingItems);
+        return rankingItems;
     }
 
     public GAME_MODE getGame_mode() {
@@ -118,8 +156,8 @@ public class MainActivity extends AppCompatActivity {
 
     public void resetScoreboard(View view) {
         scoreboard.reset();
-        isGameFinished = false;
         updateScoreboardGui(view);
+        saveAppState();
         playAgain(view);
     }
 
@@ -163,7 +201,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void makePlay(View view, ImageButton imageButton, PLAY_OPTION choice) {
         PLAY_OPTION computerChoice = generateComputerPlay();
-
         ImageButton imageButtons[] = getImageButtons();
 
         setImageButtonsEnable(false, imageButtons);
@@ -174,6 +211,7 @@ public class MainActivity extends AppCompatActivity {
 
         TextView playerChoiceTextView = (TextView) findViewById(R.id.player_choice_textView);
 
+        boolean isGameFinished = false;
         if (choice == computerChoice){
             playerChoiceTextView.setText(R.string.draw_message);
         } else {
@@ -204,8 +242,10 @@ public class MainActivity extends AppCompatActivity {
         Button playAgainButton = (Button) findViewById(R.id.play_again_button);
         playAgainButton.setVisibility(Button.VISIBLE);
 
-        if (isGameFinished && scoreboard.isWinner()) {
-            addPlayerToRankingDialog();
+        if (isGameFinished) {
+            if(scoreboard.isWinner())
+                addPlayerToRankingDialog();
+
             resetScoreboard(view);
         }
 
@@ -228,7 +268,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private PLAY_OPTION generateComputerPlay(){
+    public PLAY_OPTION generateComputerPlay(){
         if(this.game_mode == GAME_MODE.RANDOM){
             return PLAY_OPTION.values()[
                 new SecureRandom().nextInt(
@@ -244,7 +284,7 @@ public class MainActivity extends AppCompatActivity {
     *  Ranking
     * */
     private void addPlayerToRankingDialog() {
-        Player player = new Player("", scoreboard.getComputerScore(), scoreboard.getPlayerScore(), scoreboard.getGameElapsedTime());
+        RankingItem rankingItem = new RankingItem("", scoreboard.getComputerScore(), scoreboard.getPlayerScore(), scoreboard.getGameElapsedTime());
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle(R.string.add_player_scoreboard_msg);
@@ -274,8 +314,8 @@ public class MainActivity extends AppCompatActivity {
                         String txt = input.getText().toString();
 
                         if(!txt.isEmpty()){
-                            player.setNome(input.getText().toString());
-                            addPlayerToRanking(player);
+                            rankingItem.setPlayerName(input.getText().toString());
+                            addPlayerToRanking(rankingItem);
                             dialog.dismiss();
                             Navigation.findNavController(MainActivity.this, R.id.nav_host_fragment_content_main).navigate(R.id.nav_ranking);
                         } else{
@@ -289,30 +329,23 @@ public class MainActivity extends AppCompatActivity {
         dialog.show();
     }
 
-    private int findPlayer(Player player, List<Player> players){
-        for(int i = 0; i < players.size(); i++){
-            if(players.get(i).getNome().equals(player.getNome()))
-                return i;
-        }
+    private void addPlayerToRanking (RankingItem rankingItem){
+        RankingItem rankingItemAux = rankingItemDao.findByPlayerName(rankingItem.getPlayerName());
 
-        return -1;
-    }
-
-    public void addPlayerToRanking (Player player){
-        int playerIndex = findPlayer(player, ranking);
-
-        if(playerIndex < 0){
-            ranking.add(player);
-            Collections.sort(ranking);
+        if(rankingItemAux == null){
+            rankingItemDao.insert(rankingItem);
         } else {
-            if(ranking.get(playerIndex).compareTo(player) > 0){
-                ranking.remove(playerIndex);
-                ranking.add(player);
-                Collections.sort(ranking);
+            if(rankingItemAux.compareTo(rankingItem) > 0){
+                rankingItem.setId(rankingItemAux.getId());
+                rankingItemDao.update();
             } else {
                 Toast.makeText(this, R.string.better_score_already_registered_msg, Toast.LENGTH_LONG).show();
             }
         }
+    }
+
+    public void clearRanking(){
+        rankingItemDao.clear();
     }
 
 }

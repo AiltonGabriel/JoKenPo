@@ -1,5 +1,6 @@
 package tsi.ailton.android.jokenpo.ui.ranking;
 
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.os.Bundle;
@@ -18,9 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import tsi.ailton.android.jokenpo.MainActivity;
-import tsi.ailton.android.jokenpo.R;
 import tsi.ailton.android.jokenpo.databinding.FragmentRankingBinding;
-import tsi.ailton.android.jokenpo.models.Player;
+import tsi.ailton.android.jokenpo.models.RankingItem;
 import tsi.ailton.android.jokenpo.ui.jokenpo.JoKenPoViewModel;
 
 public class RankingFragment extends Fragment {
@@ -43,6 +43,11 @@ public class RankingFragment extends Fragment {
 
         mainActivity = (MainActivity)getActivity();
 
+        binding.clearRankingButton.setOnClickListener(view -> {
+            mainActivity.clearRanking();
+            updateRankingGui();
+        });
+
         return root;
     }
 
@@ -61,8 +66,8 @@ public class RankingFragment extends Fragment {
     public void updateRankingGui(){
 
         List<String> items = new ArrayList<>();
-        for(Player player : mainActivity.getRanking()){
-            items.add(player.toString());
+        for(RankingItem rankingItem : mainActivity.getRanking()){
+            items.add(rankingItem.toString());
         }
 
         ListView rankingListView = binding.rankingListView;
@@ -74,11 +79,12 @@ public class RankingFragment extends Fragment {
         rankingListView.setAdapter(adapter);
 
         TextView textView = binding.emptyRankingTextView;
+        ConstraintLayout rankingConstraintLayout = binding.rankingConstraintLayout;
         if(adapter.getCount() == 0){
             textView.setVisibility(View.VISIBLE);
-            rankingListView.setVisibility(View.GONE);
+            rankingConstraintLayout.setVisibility(View.GONE);
         } else {
-            rankingListView.setVisibility(View.VISIBLE);
+            rankingConstraintLayout.setVisibility(View.VISIBLE);
             textView.setVisibility(View.GONE);
         }
     }

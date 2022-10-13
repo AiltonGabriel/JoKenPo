@@ -1,31 +1,44 @@
 package tsi.ailton.android.jokenpo.models;
 
-import java.time.LocalDateTime;
-import java.util.Calendar;
+import androidx.room.Entity;
+import androidx.room.PrimaryKey;
+
 import java.util.concurrent.TimeUnit;
 
-public class Player implements Comparable<Player> {
-    private String nome;
+@Entity
+public class RankingItem implements Comparable<RankingItem> {
+    @PrimaryKey(autoGenerate = true)
+    public Long id;
+
+    private String playerName;
     private int computerScore;
     private int playerScore;
     private Long gameTime;
 
-    public Player() {
+    public RankingItem() {
     }
 
-    public Player(String nome, int computerScore, int playerScore, Long durationTime) {
-        this.nome = nome;
+    public RankingItem(String playerName, int computerScore, int playerScore, Long durationTime) {
+        this.playerName = playerName;
         this.computerScore = computerScore;
         this.playerScore = playerScore;
         this.gameTime = durationTime;
     }
 
-    public String getNome() {
-        return nome;
+    public Long getId() {
+        return id;
     }
 
-    public void setNome(String nome) {
-        this.nome = nome;
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getPlayerName() {
+        return playerName;
+    }
+
+    public void setPlayerName(String playerName) {
+        this.playerName = playerName;
     }
 
     public int getComputerScore() {
@@ -57,16 +70,16 @@ public class Player implements Comparable<Player> {
     }
 
     @Override
-    public int compareTo(Player player) {
-        return (Math.abs(this.computerScore - this.playerScore) != Math.abs(player.computerScore - player.playerScore))
-                ? Integer.compare(player.playerScore - player.computerScore, this.playerScore - this.computerScore)
-                : Long.compare(this.gameTime, player.gameTime);
+    public int compareTo(RankingItem rankingItem) {
+        return (Math.abs(this.computerScore - this.playerScore) != Math.abs(rankingItem.computerScore - rankingItem.playerScore))
+                ? Integer.compare(rankingItem.playerScore - rankingItem.computerScore, this.playerScore - this.computerScore)
+                : Long.compare(this.gameTime, rankingItem.gameTime);
     }
 
     @Override
     public String toString() {
         return String.format("Jogador: %s \t Placar: %d x %d \t Tempo: %02d:%02d",
-                nome, playerScore, computerScore,
+                playerName, playerScore, computerScore,
                 TimeUnit.MILLISECONDS.toMinutes(gameTime), TimeUnit.MILLISECONDS.toSeconds(gameTime));
     }
 
