@@ -1,11 +1,9 @@
 package tsi.ailton.android.jokenpo;
 
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.graphics.PorterDuff;
 import android.os.Bundle;
 import android.text.InputType;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -15,6 +13,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -22,13 +22,8 @@ import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.room.Room;
 
 import java.security.SecureRandom;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.List;
 
 import tsi.ailton.android.jokenpo.databinding.ActivityMainBinding;
 import tsi.ailton.android.jokenpo.models.AppState;
@@ -36,7 +31,6 @@ import tsi.ailton.android.jokenpo.models.RankingItem;
 import tsi.ailton.android.jokenpo.models.Scoreboard;
 import tsi.ailton.android.jokenpo.models.dao.AppDatabase;
 import tsi.ailton.android.jokenpo.models.dao.AppStateDao;
-import tsi.ailton.android.jokenpo.models.dao.RankingItemDao;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -61,23 +55,23 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    public enum GAME_MODE { RANDOM, ONLY_ROCK };
+    public enum GAME_MODE { RANDOM, ONLY_ROCK }
 
+    private FirebaseFirestore firestore;
     private AppDatabase db;
-    private RankingItemDao rankingItemDao;
+
     private AppStateDao appStateDao;
 
     private GAME_MODE game_mode;
     private Scoreboard scoreboard;
 
     private AppBarConfiguration mAppBarConfiguration;
-    private ActivityMainBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         setSupportActionBar(binding.appBarMain.toolbar);
@@ -93,12 +87,9 @@ public class MainActivity extends AppCompatActivity {
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
 
-//        ranking.add(new Player("Ailton2", 3, 5, 10000L));
-//        ranking.add(new Player("Ailton3", 2, 5, 250000L));
-//        ranking.add(new Player("Ailton4", 3, 5, 8000L));
-
+        firestore = FirebaseFirestore.getInstance();
         db = AppDatabase.getInstance(getApplicationContext());
-        rankingItemDao = db.rankingItemDao();
+
         appStateDao = db.appStateDao();
 
         AppState appState = appStateDao.get();
@@ -140,12 +131,6 @@ public class MainActivity extends AppCompatActivity {
         return scoreboard.isGameFinished();
     }
 
-    public List<RankingItem> getRanking() {
-        List<RankingItem> rankingItems = rankingItemDao.getAll();
-        Collections.sort(rankingItems);
-        return rankingItems;
-    }
-
     public GAME_MODE getGame_mode() {
         return game_mode;
     }
@@ -177,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
         ImageView computerChoiceImageView = (ImageView) findViewById(R.id.computer_choice_imageView);
         computerChoiceImageView.setImageResource(R.color.computer_choose_empty_background_color);
 
-        ImageButton imageButtons[] = getImageButtons();
+        ImageButton[] imageButtons = getImageButtons();
 
         setImageButtonsEnable(true, imageButtons);
         for(ImageButton imageButton : imageButtons) {
@@ -201,7 +186,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void makePlay(View view, ImageButton imageButton, PLAY_OPTION choice) {
         PLAY_OPTION computerChoice = generateComputerPlay();
-        ImageButton imageButtons[] = getImageButtons();
+        ImageButton[] imageButtons = getImageButtons();
 
         setImageButtonsEnable(false, imageButtons);
         imageButton.getBackground().setColorFilter(androidx.appcompat.R.attr.colorPrimary, PorterDuff.Mode.MULTIPLY);
@@ -253,7 +238,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private ImageButton[] getImageButtons(){
-        ImageButton imageButtons[] = new ImageButton[3];
+        ImageButton[] imageButtons = new ImageButton[3];
 
         imageButtons[0] = (ImageButton) findViewById(R.id.rock_imageButton);
         imageButtons[1] = (ImageButton) findViewById(R.id.paper_imageButton);
@@ -262,7 +247,7 @@ public class MainActivity extends AppCompatActivity {
         return imageButtons;
     }
 
-    private void setImageButtonsEnable(Boolean enable, ImageButton imageButtons[]) {
+    private void setImageButtonsEnable(Boolean enable, ImageButton[] imageButtons) {
         for(ImageButton imageButton : imageButtons) {
             imageButton.setEnabled(enable);
         }
@@ -276,7 +261,7 @@ public class MainActivity extends AppCompatActivity {
                 )
             ];
         } //else if(this.game_mode == GAME_MODE.ONLY_ROCK){
-            return PLAY_OPTION.ROCK;
+        return PLAY_OPTION.ROCK;
         //}
     }
 
@@ -294,58 +279,48 @@ public class MainActivity extends AppCompatActivity {
         builder.setView(input);
 
         builder.setPositiveButton(R.string.add_player_scoreboard_ok_button_text, null);
-        builder.setNegativeButton(R.string.add_player_scoreboard_cancel_button_text, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.cancel();
-            }
-        });
+        builder.setNegativeButton(R.string.add_player_scoreboard_cancel_button_text, (dialog, which) -> dialog.cancel());
 
         AlertDialog dialog = builder.create();
 
-        dialog.setOnShowListener(new DialogInterface.OnShowListener() {
-            @Override
-            public void onShow(DialogInterface dialogInterface) {
-                Button button = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
+        dialog.setOnShowListener(dialogInterface -> {
+            Button button = ((AlertDialog) dialog).getButton(AlertDialog.BUTTON_POSITIVE);
 
-                button.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-                        String txt = input.getText().toString();
+            button.setOnClickListener(view -> {
+                String txt = input.getText().toString();
 
-                        if(!txt.isEmpty()){
-                            rankingItem.setPlayerName(input.getText().toString());
-                            addPlayerToRanking(rankingItem);
-                            dialog.dismiss();
-                            Navigation.findNavController(MainActivity.this, R.id.nav_host_fragment_content_main).navigate(R.id.nav_ranking);
-                        } else{
-                            Toast.makeText(getApplicationContext(), R.string.add_player_scoreboard_empty_input_msg, Toast.LENGTH_LONG).show();
-                        }
-                    }
-                });
-            }
+                if(!txt.isEmpty()){
+                    rankingItem.setPlayerName(input.getText().toString());
+                    addPlayerToRanking(rankingItem);
+                    dialog.dismiss();
+                } else{
+                    Toast.makeText(getApplicationContext(), R.string.add_player_scoreboard_empty_input_msg, Toast.LENGTH_LONG).show();
+                }
+            });
         });
 
         dialog.show();
     }
 
     private void addPlayerToRanking (RankingItem rankingItem){
-        RankingItem rankingItemAux = rankingItemDao.findByPlayerName(rankingItem.getPlayerName());
-
-        if(rankingItemAux == null){
-            rankingItemDao.insert(rankingItem);
-        } else {
-            if(rankingItemAux.compareTo(rankingItem) > 0){
-                rankingItem.setId(rankingItemAux.getId());
-                rankingItemDao.update();
-            } else {
-                Toast.makeText(this, R.string.better_score_already_registered_msg, Toast.LENGTH_LONG).show();
-            }
-        }
-    }
-
-    public void clearRanking(){
-        rankingItemDao.clear();
+        firestore.collection("ranking")
+                .whereEqualTo("playerName", rankingItem.getPlayerName())
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        boolean isBestEntry = true;
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            if(rankingItem.compareTo(document.toObject(RankingItem.class)) <= 0) {
+                                Toast.makeText(MainActivity.this, R.string.better_score_already_registered_msg, Toast.LENGTH_LONG).show();
+                                isBestEntry = false;
+                            }
+                        }
+                        if (isBestEntry){
+                            firestore.collection("ranking").add(rankingItem);
+                            Navigation.findNavController(MainActivity.this, R.id.nav_host_fragment_content_main).navigate(R.id.nav_ranking);
+                        }
+                    }
+                });
     }
 
 }

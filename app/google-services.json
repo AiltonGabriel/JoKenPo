@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "573229612105",
+    "project_id": "jokenpo-1c3bb",
+    "storage_bucket": "jokenpo-1c3bb.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:573229612105:android:1de6fe8f94fba92eadd398",
+        "android_client_info": {
+          "package_name": "tsi.ailton.android.jokenpo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "573229612105-1n992uke19112lqptdmjbdfkeonugkuq.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDF7ZIVxQElkZ8fTO5NpNFTdAENI1XMIOk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "573229612105-1n992uke19112lqptdmjbdfkeonugkuq.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

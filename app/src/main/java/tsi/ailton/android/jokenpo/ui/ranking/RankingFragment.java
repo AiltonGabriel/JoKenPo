@@ -15,7 +15,11 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import tsi.ailton.android.jokenpo.MainActivity;
@@ -31,6 +35,7 @@ public class RankingFragment extends Fragment {
 
     private FragmentRankingBinding binding;
     private MainActivity mainActivity;
+    private FirebaseFirestore firestore;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -43,10 +48,9 @@ public class RankingFragment extends Fragment {
 
         mainActivity = (MainActivity)getActivity();
 
-        binding.clearRankingButton.setOnClickListener(view -> {
-            mainActivity.clearRanking();
-            updateRankingGui();
-        });
+        firestore = FirebaseFirestore.getInstance();
+
+        binding.clearRankingButton.setOnClickListener(view -> clearRanking());
 
         return root;
     }
@@ -63,30 +67,56 @@ public class RankingFragment extends Fragment {
         binding = null;
     }
 
+    public void clearRanking(){
+        firestore.collection("ranking")
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            document.getReference().delete();
+                        }
+                        updateRankingGui();
+                    }
+                });
+    }
+
     public void updateRankingGui(){
+        List<RankingItem> ranking = new ArrayList<>();
 
-        List<String> items = new ArrayList<>();
-        for(RankingItem rankingItem : mainActivity.getRanking()){
-            items.add(rankingItem.toString());
-        }
+        firestore.collection("ranking")
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        for (QueryDocumentSnapshot document : task.getResult()) {
+                            ranking.add(document.toObject(RankingItem.class));
+                        }
 
-        ListView rankingListView = binding.rankingListView;
+                        Collections.sort(ranking);
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(
-                mainActivity, android.R.layout.simple_list_item_1, items
-        );
+                        List<String> items = new ArrayList<>();
+                        for(RankingItem rankingItem : ranking){
+                            items.add(rankingItem.toString());
+                        }
 
-        rankingListView.setAdapter(adapter);
+                        ListView rankingListView = binding.rankingListView;
 
-        TextView textView = binding.emptyRankingTextView;
-        ConstraintLayout rankingConstraintLayout = binding.rankingConstraintLayout;
-        if(adapter.getCount() == 0){
-            textView.setVisibility(View.VISIBLE);
-            rankingConstraintLayout.setVisibility(View.GONE);
-        } else {
-            rankingConstraintLayout.setVisibility(View.VISIBLE);
-            textView.setVisibility(View.GONE);
-        }
+                        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                                mainActivity, android.R.layout.simple_list_item_1, items
+                        );
+
+                        rankingListView.setAdapter(adapter);
+
+                        TextView textView = binding.emptyRankingTextView;
+                        ConstraintLayout rankingConstraintLayout = binding.rankingConstraintLayout;
+                        if(adapter.getCount() == 0){
+                            textView.setVisibility(View.VISIBLE);
+                            rankingConstraintLayout.setVisibility(View.GONE);
+                        } else {
+                            rankingConstraintLayout.setVisibility(View.VISIBLE);
+                            textView.setVisibility(View.GONE);
+                        }
+                    }
+                });
     }
 
 }

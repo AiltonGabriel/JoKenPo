@@ -1,6 +1,8 @@
 package tsi.ailton.android.jokenpo.ui.gamemode;
 
 import androidx.lifecycle.ViewModelProvider;
+
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -12,8 +14,6 @@ import android.view.ViewGroup;
 import tsi.ailton.android.jokenpo.MainActivity;
 import tsi.ailton.android.jokenpo.R;
 import tsi.ailton.android.jokenpo.databinding.FragmentGameModeBinding;
-import tsi.ailton.android.jokenpo.databinding.FragmentRankingBinding;
-import tsi.ailton.android.jokenpo.ui.jokenpo.JoKenPoViewModel;
 
 public class GameModeFragment extends Fragment {
 
@@ -24,6 +24,7 @@ public class GameModeFragment extends Fragment {
     private FragmentGameModeBinding binding;
     private MainActivity mainActivity;
 
+    @SuppressLint("NonConstantResourceId")
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {

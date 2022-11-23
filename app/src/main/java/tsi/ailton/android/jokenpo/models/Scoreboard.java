@@ -2,10 +2,8 @@ package tsi.ailton.android.jokenpo.models;
 
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
-import androidx.room.TypeConverter;
 import androidx.room.TypeConverters;
 
-import java.time.Duration;
 import java.util.Calendar;
 
 import tsi.ailton.android.jokenpo.models.dao.converters.CalendarConverter;
@@ -89,9 +87,7 @@ public class Scoreboard {
     }
 
     public boolean isWinner() {
-        if (playerScore >= POINTS_TO_WIN && playerScore > computerScore)
-            return true;
-        return false;
+        return playerScore >= POINTS_TO_WIN && playerScore > computerScore;
     }
 
     public long getGameElapsedTime() {

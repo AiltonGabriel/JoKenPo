@@ -1,5 +1,8 @@
 package tsi.ailton.android.jokenpo.models;
 
+import android.annotation.SuppressLint;
+
+import androidx.annotation.NonNull;
 import androidx.room.Entity;
 import androidx.room.PrimaryKey;
 
@@ -76,6 +79,8 @@ public class RankingItem implements Comparable<RankingItem> {
                 : Long.compare(this.gameTime, rankingItem.gameTime);
     }
 
+    @SuppressLint("DefaultLocale")
+    @NonNull
     @Override
     public String toString() {
         return String.format("Jogador: %s \t Placar: %d x %d \t Tempo: %02d:%02d",
