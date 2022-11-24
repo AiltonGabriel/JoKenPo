@@ -1,7 +1,14 @@
 package tsi.ailton.android.jokenpo;
 
+import android.app.AlarmManager;
 import android.app.AlertDialog;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.Intent;
 import android.graphics.PorterDuff;
+import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.View;
@@ -13,8 +20,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.firestore.DocumentChange;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
@@ -25,12 +36,17 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.security.SecureRandom;
 
+import javax.annotation.Nullable;
+
+import tsi.ailton.android.jokenpo.controllers.VibratorController;
 import tsi.ailton.android.jokenpo.databinding.ActivityMainBinding;
 import tsi.ailton.android.jokenpo.models.AppState;
+import tsi.ailton.android.jokenpo.controllers.MediaPlayerController;
 import tsi.ailton.android.jokenpo.models.RankingItem;
 import tsi.ailton.android.jokenpo.models.Scoreboard;
 import tsi.ailton.android.jokenpo.models.dao.AppDatabase;
 import tsi.ailton.android.jokenpo.models.dao.AppStateDao;
+import tsi.ailton.android.jokenpo.notifications.AlarmReciever;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -64,6 +80,11 @@ public class MainActivity extends AppCompatActivity {
 
     private GAME_MODE game_mode;
     private Scoreboard scoreboard;
+
+    private MediaPlayerController mediaPlayerController;
+    private VibratorController vibratorController;
+
+    private boolean isNotificationListenerCreated;
 
     private AppBarConfiguration mAppBarConfiguration;
 
@@ -101,6 +122,13 @@ public class MainActivity extends AppCompatActivity {
             game_mode = GAME_MODE.RANDOM;
             scoreboard = new Scoreboard();
         }
+
+        mediaPlayerController = new MediaPlayerController(getApplicationContext());
+        vibratorController = new VibratorController(getApplicationContext());
+
+        isNotificationListenerCreated = false;
+        createNotificationListener();
+
     }
 
     @Override
@@ -197,39 +225,75 @@ public class MainActivity extends AppCompatActivity {
         TextView playerChoiceTextView = (TextView) findViewById(R.id.player_choice_textView);
 
         boolean isGameFinished = false;
-        if (choice == computerChoice){
+
+        boolean draw = false;
+        boolean won = false;
+
+        switch (choice) {
+            case ROCK:
+                switch (computerChoice) {
+                    case ROCK:
+                        mediaPlayerController.play(R.raw.rock_rock);
+                        draw = true;
+                        break;
+                    case PAPER:
+                        mediaPlayerController.play(R.raw.paper_rock);
+                        break;
+                    case SCISSORS:
+                        mediaPlayerController.play(R.raw.rock_scissors);
+                        won = true;
+                        break;
+                }
+                break;
+            case PAPER:
+                switch (computerChoice) {
+                    case ROCK:
+                        mediaPlayerController.play(R.raw.paper_rock);
+                        won = true;
+                        break;
+                    case PAPER:
+                        mediaPlayerController.play(R.raw.paper_paper);
+                        draw = true;
+                        break;
+                    case SCISSORS:
+                        mediaPlayerController.play(R.raw.scissors_paper);
+                        break;
+                }
+                break;
+            case SCISSORS:
+                switch (computerChoice) {
+                    case ROCK:
+                        mediaPlayerController.play(R.raw.rock_scissors);
+                        break;
+                    case PAPER:
+                        mediaPlayerController.play(R.raw.scissors_paper);
+                        won = true;
+                        break;
+                    case SCISSORS:
+                        mediaPlayerController.play(R.raw.scissors_sicssors);
+                        draw = true;
+                        break;
+                }
+                break;
+        }
+
+        if (draw){
             playerChoiceTextView.setText(R.string.draw_message);
         } else {
-
-            boolean won = false;
-
-            switch (choice) {
-                case ROCK:
-                    if (computerChoice == PLAY_OPTION.SCISSORS)
-                        won = true;
-                    break;
-                case PAPER:
-                    if (computerChoice == PLAY_OPTION.ROCK)
-                        won = true;
-                    break;
-                case SCISSORS:
-                    if (computerChoice == PLAY_OPTION.PAPER)
-                        won = true;
-                    break;
-            }
-
             playerChoiceTextView.setText((won) ? R.string.win_message : R.string.lose_message);
 
             isGameFinished = (won) ? scoreboard.addPointPlayer() : scoreboard.addPointComputer();
-
         }
 
         Button playAgainButton = (Button) findViewById(R.id.play_again_button);
         playAgainButton.setVisibility(Button.VISIBLE);
 
         if (isGameFinished) {
-            if(scoreboard.isWinner())
+            if(scoreboard.isWinner()) {
+                vibratorController.vibrate(VibratorController.MORTAL_KOMBAT_THEME);
+                mediaPlayerController.play(R.raw.mk_theme);
                 addPlayerToRankingDialog();
+            }
 
             resetScoreboard(view);
         }
@@ -267,7 +331,7 @@ public class MainActivity extends AppCompatActivity {
 
     /*
     *  Ranking
-    * */
+    */
     private void addPlayerToRankingDialog() {
         RankingItem rankingItem = new RankingItem("", scoreboard.getComputerScore(), scoreboard.getPlayerScore(), scoreboard.getGameElapsedTime());
 
@@ -321,6 +385,60 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
                 });
+    }
+
+    /*
+     * Notification
+     */
+    public void createChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            String name = "notific";
+            String description = "test";
+            int importance = NotificationManager.IMPORTANCE_HIGH;
+            NotificationChannel channel = new NotificationChannel("1", name, importance);
+            channel.setDescription(description);
+            channel.setShowBadge(true);
+            channel.setLockscreenVisibility(Notification.VISIBILITY_SECRET);
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+    }
+
+    private void createNotificationListener() {
+        firestore.collection("ranking")
+            .addSnapshotListener(new EventListener<QuerySnapshot>() {
+                @Override
+                public void onEvent(@Nullable QuerySnapshot snapshots,
+                                    @Nullable FirebaseFirestoreException e) {
+                    if (e != null) {
+                        return;
+                    }
+
+                    if (!isNotificationListenerCreated) {
+                        isNotificationListenerCreated = true;
+                        return;
+                    }
+
+                    for (DocumentChange dc : snapshots.getDocumentChanges()) {
+                        switch (dc.getType()) {
+                            case ADDED:
+                                Integer milliseconds = 0;
+                                Integer requestCode = 0;
+                                Intent intent = new Intent(MainActivity.this, AlarmReciever.class);
+                                PendingIntent pendingIntent = PendingIntent.getBroadcast(
+                                        MainActivity.this.getApplicationContext(),
+                                        requestCode++, intent,
+                                        PendingIntent.FLAG_MUTABLE
+                                );
+                                AlarmManager alarmManager = (AlarmManager) getSystemService(ALARM_SERVICE);
+                                alarmManager.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis()
+                                        + milliseconds, pendingIntent);
+                                break;
+                        }
+                    }
+
+                }
+            });
     }
 
 }
