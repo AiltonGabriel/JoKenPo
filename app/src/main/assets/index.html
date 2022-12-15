@@ -37,11 +37,11 @@
         <span class="h1">JoKenPo</span>
     </nav>
 
-    <main class="my-container center grey-text text-darken-2">
-        <section class="row col s12">
+    <main class="my-container center grey-text text-darken-2 row col s12">
+        <section class="row">
             <div class="col s4">
                 <div class="label">JOGADOR</div>
-                <div class="label score fw-bold">0</div>
+                <div id="playerScore" class="label score fw-bold">0</div>
             </div>
             <div class="col s4">
                 <div class="label"> </div>
@@ -49,33 +49,37 @@
             </div>
             <div class="col s4">
                 <div class="label">COMPUTADOR</div>
-                <div class="label score fw-bold">0</div>
+                <div id="computerScore" class="label score fw-bold">0</div>
             </div>
-            <button class="col s12 waves-effect waves-light btn deep-purple darken-3">Zerar</button>
-        </section>
-
-        <section>
-            <div class="label fw-bold">Escolha do computador</div>
-            <img class="computer-choice" src="img/covered_choice.png">
+            <button id="resetScoreboarBtn" class="col s12 waves-effect waves-light btn deep-purple darken-3">Zerar</button>
         </section>
 
         <section class="row">
-            <div class="col s12 label fw-bold">Selecione sua jogada:</div>
-            <a class="player-choice waves-effect waves-light col s4">
-                <img id="rockBtn" class="responsive-img grey lighten-1" src="img/ic_rock_192.png">
-            </a>
-            <a class="player-choice waves-effect waves-light col s4">
-                <img id="paperBtn" class="responsive-img grey lighten-1" src="img/ic_paper_192.png">
-            </a>
-            <a class="player-choice waves-effect waves-light col s4">
-                <img id="scissorsBtn" class="responsive-img grey lighten-1" src="img/ic_scissors_192.png">
-            </a>
+            <div class="label fw-bold">Escolha do computador</div>
+            <img id="computer-choice" src="img/covered_choice.png">
+        </section>
+
+        <section class="row">
+            <div id="game-status-label" class="col s12 label fw-bold">Selecione sua jogada:</div>
+            <button id="rockBtn" class="player-choice waves-effect waves-light">
+                <img class="responsive-img grey lighten-1" src="img/ic_rock_192.png">
+            </button>
+            <button id="paperBtn" class="player-choice waves-effect waves-light">
+                <img class="responsive-img grey lighten-1" src="img/ic_paper_192.png">
+            </button>
+            <button id="scissorsBtn" class="player-choice waves-effect waves-light">
+                <img class="responsive-img grey lighten-1" src="img/ic_scissors_192.png">
+            </button>
+        </section>
+
+        <section id="play-again-container" class="row">
+            <button id="playAgainBtn" class="col s12 waves-effect waves-light btn deep-purple darken-3">Jogar Novamente</button>
         </section>
     </main>
 
     <script src="js/jquery-3.6.1.min.js"></script>
-    <script src="js/script.js"></script>
     <script type="text/javascript" src="materialize/js/materialize.min.js"></script>
+    <script src="js/script.js"></script>
 </body>
 
 </html>

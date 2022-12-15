@@ -10,17 +10,15 @@
 
 .my-container {
     height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-evenly;
     padding: 0 5%;
 }
 
 .my-container > section {
     width: 100%;
+    margin: 0 !important;
 }
 
-.computer-choice {
+#computer-choice {
     width: 35vh;
     height: 35vh;
 }
@@ -38,11 +36,46 @@
 }
 
 .player-choice{
-    padding: 2%;
-    height: 12vh;
-    width: 12vh;
+    margin: 2%;
+    width: calc(76% / 3);
+    border: 0 !important;
+    outline: none !important;
 }
 
-.player-choice img{
+.player-choice img, .player-choice{
     border-radius: 4px;
+}
+
+#playAgainBtn{
+    display: none;
+}
+
+@media (max-width: 600px)
+{
+    .my-container{
+        display: flex;
+        flex-direction: column;
+        justify-content: space-evenly;
+    }
+}
+
+@media (min-width: 600px)
+{
+    .my-container{
+        display: grid;
+        grid-template-columns: 48% 48%;
+        column-gap: 4%;
+        align-content: space-evenly;
+        direction: rtl;
+    }
+
+    .my-container *{
+        direction: ltr;
+    }
+
+    #play-again-container{
+        display: flex;
+        align-items: center;
+        display: none;
+    }
 }

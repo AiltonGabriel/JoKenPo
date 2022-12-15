@@ -35,10 +35,10 @@ public class JoKenPoFragment extends Fragment {
         super.onResume();
         MainActivity mainActivity = (MainActivity)getActivity();
         if (mainActivity != null) {
-            if (mainActivity.isGameFinished())
-                mainActivity.resetScoreboard(binding.getRoot());
-            else
-                mainActivity.updateScoreboardGui(binding.getRoot());
+//            if (mainActivity.isGameFinished())
+//                mainActivity.resetScoreboard(binding.getRoot());
+//            else
+//                mainActivity.updateScoreboardGui(binding.getRoot());
         }
     }
 
