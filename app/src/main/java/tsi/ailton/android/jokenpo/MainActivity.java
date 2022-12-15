@@ -12,6 +12,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.text.InputType;
 import android.view.View;
+import android.webkit.JavascriptInterface;
+import android.webkit.WebChromeClient;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -86,27 +91,32 @@ public class MainActivity extends AppCompatActivity {
 
     private boolean isNotificationListenerCreated;
 
+    public WebView webView;
+
     private AppBarConfiguration mAppBarConfiguration;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
 
-        ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
-
-        setSupportActionBar(binding.appBarMain.toolbar);
-        DrawerLayout drawer = binding.drawerLayout;
-        NavigationView navigationView = binding.navView;
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
-        mAppBarConfiguration = new AppBarConfiguration.Builder(
-                R.id.nav_jo_ken_po, R.id.nav_ranking, R.id.nav_game_mode)
-                .setOpenableLayout(drawer)
-                .build();
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-        NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
-        NavigationUI.setupWithNavController(navigationView, navController);
+//        super.onCreate(savedInstanceState);
+//
+//        ActivityMainBinding binding = ActivityMainBinding.inflate(getLayoutInflater());
+//        setContentView(binding.getRoot());
+//
+//        setSupportActionBar(binding.appBarMain.toolbar);
+//        DrawerLayout drawer = binding.drawerLayout;
+//        NavigationView navigationView = binding.navView;
+//        // Passing each menu ID as a set of Ids because each
+//        // menu should be considered as top level destinations.
+//        mAppBarConfiguration = new AppBarConfiguration.Builder(
+//                R.id.nav_jo_ken_po, R.id.nav_ranking, R.id.nav_game_mode)
+//                .setOpenableLayout(drawer)
+//                .build();
+//        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
+//        NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
+//        NavigationUI.setupWithNavController(navigationView, navController);
 
         firestore = FirebaseFirestore.getInstance();
         db = AppDatabase.getInstance(getApplicationContext());
@@ -129,6 +139,67 @@ public class MainActivity extends AppCompatActivity {
         isNotificationListenerCreated = false;
         createNotificationListener();
 
+        // Configura a WebView
+        webView = (WebView) findViewById(R.id.webView);
+        webView.setVisibility(View.INVISIBLE);
+        webView.setWebChromeClient(new WebChromeClient());
+        // Habilita o JS
+        WebSettings webSettings = webView.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        // Garante que usará a WebView e não o navegador padrão
+        webView.setWebViewClient(new WebViewClient(){
+            // Callback que determina quando terminou de ser carregada a
+            // WebView, para trocarmos a imagem de carregamento por ela
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                ImageView imageView = (ImageView)
+                        findViewById(R.id.imageView);
+                imageView.setVisibility(View.INVISIBLE);
+                webView.setVisibility(View.VISIBLE);
+            }
+        });
+        // Associa a interface (a ser definida abaixo) e carrega o HTML
+        webView.addJavascriptInterface(new WebAppInterface(this),"Android");
+        webView.loadUrl("file:///android_asset/index.html");
+
+    }
+
+    // Interface para binding Javascript -> Java
+    public class WebAppInterface {
+        MainActivity mainActivity;
+        public WebAppInterface(MainActivity activity) {
+            this.mainActivity = activity;
+        }
+        @JavascriptInterface
+        public void androidToast(String msg) {
+            Toast.makeText(mainActivity, msg, Toast.LENGTH_SHORT).show();
+            // Chama uma função do JavaScript
+            runJavaScript("oculta_botao();");
+        }
+        public void playRock() {
+
+            //makePlay(view, (ImageButton) view, PLAY_OPTION.ROCK);
+        }
+    }
+
+    // Possibilita o uso do botão voltar
+    @Override
+    public void onBackPressed() {
+        if(webView.canGoBack()) {
+            webView.goBack();
+        } else {
+            super.onBackPressed();
+        }
+    }
+    // Executa um comando JavaScript
+    public void runJavaScript(final String jsCode){
+        this.runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                webView.evaluateJavascript(jsCode, null);
+            }
+        });
     }
 
     @Override
@@ -137,12 +208,12 @@ public class MainActivity extends AppCompatActivity {
         saveAppState();
     }
 
-    @Override
-    public boolean onSupportNavigateUp() {
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
-        return NavigationUI.navigateUp(navController, mAppBarConfiguration)
-                || super.onSupportNavigateUp();
-    }
+//    @Override
+//    public boolean onSupportNavigateUp() {
+//        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_content_main);
+//        return NavigationUI.navigateUp(navController, mAppBarConfiguration)
+//                || super.onSupportNavigateUp();
+//    }
 
     private void saveAppState(){
         AppState appState = appStateDao.get();

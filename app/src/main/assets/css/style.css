@@ -1,0 +1,48 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+
+.h1{
+    font-size: 125%;
+    font-weight: bold;
+}
+
+.my-container {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    padding: 0 5%;
+}
+
+.my-container > section {
+    width: 100%;
+}
+
+.computer-choice {
+    width: 35vh;
+    height: 35vh;
+}
+
+.label {
+    margin-bottom: 2vh;
+}
+
+.score {
+    font-size: 250% !important;
+}
+
+.fw-bold {
+    font-weight: bold;
+}
+
+.player-choice{
+    padding: 2%;
+    height: 12vh;
+    width: 12vh;
+}
+
+.player-choice img{
+    border-radius: 4px;
+}

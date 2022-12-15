@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>JoKenPo</title>
+
+    <link rel="stylesheet" href="css/style.css">
+
+    <!--Import Google Icon Font-->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!--Import materialize.css-->
+    <link type="text/css" rel="stylesheet" href="materialize/css/materialize.min.css" media="screen,projection" />
+
+    <!--Let browser know website is optimized for mobile-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+
+<body>
+
+    <nav id="navbar" class="deep-purple darken-3">
+        <ul id="slide-out" class="sidenav">
+            <li>
+                <div class="user-view">
+                    <div class="background deep-purple"></div>
+                    <img class="circle" src="img/ic_logo.png">
+                    <span class="white-text name">JoKenPo</span>
+                    <span class="white-text email">Ailton Gabriel de Oliveira</span>
+                </div>
+            </li>
+            <li><a href="#!"><i class="material-icons">play_arrow</i>JoKenPo</a></li>
+            <li><a href="#!"><i class="material-icons">format_list_numbered</i>Ranking</a></li>
+            <li><a href="#!"><i class="material-icons">settings</i>Modo de jogo</a></li>
+        </ul>
+        <a href="#" data-target="slide-out" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+
+        <span class="h1">JoKenPo</span>
+    </nav>
+
+    <main class="my-container center grey-text text-darken-2">
+        <section class="row col s12">
+            <div class="col s4">
+                <div class="label">JOGADOR</div>
+                <div class="label score fw-bold">0</div>
+            </div>
+            <div class="col s4">
+                <div class="label"> </div>
+                <div class="label score fw-bold">X</div>
+            </div>
+            <div class="col s4">
+                <div class="label">COMPUTADOR</div>
+                <div class="label score fw-bold">0</div>
+            </div>
+            <button class="col s12 waves-effect waves-light btn deep-purple darken-3">Zerar</button>
+        </section>
+
+        <section>
+            <div class="label fw-bold">Escolha do computador</div>
+            <img class="computer-choice" src="img/covered_choice.png">
+        </section>
+
+        <section class="row">
+            <div class="col s12 label fw-bold">Selecione sua jogada:</div>
+            <a class="player-choice waves-effect waves-light col s4">
+                <img id="rockBtn" class="responsive-img grey lighten-1" src="img/ic_rock_192.png">
+            </a>
+            <a class="player-choice waves-effect waves-light col s4">
+                <img id="paperBtn" class="responsive-img grey lighten-1" src="img/ic_paper_192.png">
+            </a>
+            <a class="player-choice waves-effect waves-light col s4">
+                <img id="scissorsBtn" class="responsive-img grey lighten-1" src="img/ic_scissors_192.png">
+            </a>
+        </section>
+    </main>
+
+    <script src="js/jquery-3.6.1.min.js"></script>
+    <script src="js/script.js"></script>
+    <script type="text/javascript" src="materialize/js/materialize.min.js"></script>
+</body>
+
+</html>
